@@ -52,6 +52,7 @@ jobs:
       shell: bash
       run: |
         make appimage
+        tree _build/AppDir
 
     - name: Generate release notes
       shell: bash
