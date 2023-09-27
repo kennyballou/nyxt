@@ -105,3 +105,9 @@ flatpak-repository:
 .PHONY: flatpak-bundle
 flatpak-bundle:
 	@$(FLATPAK_COMMAND) build-bundle $(FLATPAK_EXPORT_REPOSITORY) nyxt.flatpak $(FLATPAK_APP_ID)
+
+.PHONY: appimage
+appimage:
+	mkdir -p _build/AppDir
+	DESTDIR=$(pwd)/_build/AppDir $(lisp_eval) '(asdf:load-system :nyxt/$(NYXT_RENDERER)-application)' \
+		--eval '(asdf:make :nyxt/install)' $(lisp_quit)
