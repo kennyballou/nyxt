@@ -11,7 +11,8 @@ jobs:
     name: ${{ matrix.lisp }} on ${{ matrix.os }}
     strategy:
       matrix:
-        lisp: [sbcl]
+        #lisp: [sbcl]
+        lisp: [ccl-bin/1.12.1]
         # See https://github.com/actions/virtual-environments for the list of
         # official distributions.
         os: [ubuntu-latest]
