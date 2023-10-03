@@ -67,8 +67,8 @@ jobs:
       shell: bash
       run: git ls-files --recurse-submodules | tar caf nyxt-$(cat version)-source-with-submodules.tar.xz -T-
 
-    - name: Release
-      uses: ncipollo/release-action@v1
-      with:
-        bodyFile: release.txt
-        artifacts: "nyxt-*.tar.xz*,*.flatpak"
+    # - name: Release
+    #   uses: ncipollo/release-action@v1
+    #   with:
+    #     bodyFile: release.txt
+    #     artifacts: "nyxt-*.tar.xz*,*.flatpak"
