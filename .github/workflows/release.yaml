@@ -37,17 +37,17 @@ jobs:
       shell: bash
       run: |
         sudo apt-get update -qq
-        sudo apt-get install -y flatpak-builder
+        #sudo apt-get install -y flatpak-builder
 
-    - name: Build Flatpak
-      shell: bash
-      run: |
-        sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-        sudo flatpak install --noninteractive org.gnome.Platform/x86_64/45
-        sudo flatpak install --noninteractive org.gnome.Sdk/x86_64/45
-        make flatpak-repository
-        make flatpak-bundle
-        mv nyxt.flatpak nyxt-$(cat version).flatpak
+    # - name: Build Flatpak
+    #   shell: bash
+    #   run: |
+    #     sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+    #     sudo flatpak install --noninteractive org.gnome.Platform/x86_64/45
+    #     sudo flatpak install --noninteractive org.gnome.Sdk/x86_64/45
+    #     make flatpak-repository
+    #     make flatpak-bundle
+    #     mv nyxt.flatpak nyxt-$(cat version).flatpak
 
     - name: Build AppDir
       shell: bash
