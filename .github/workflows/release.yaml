@@ -52,6 +52,7 @@ jobs:
     - name: Build AppDir
       shell: bash
       run: |
+        which ccl
         make appimage
         tree _build/AppDir
 
