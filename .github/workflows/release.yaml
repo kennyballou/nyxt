@@ -52,9 +52,9 @@ jobs:
     - name: Build AppDir
       shell: bash
       run: |
-        which ccl
-        make appimage
-        tree _build/AppDir
+        ccl --version
+        #make appimage
+        #tree _build/AppDir
 
     - name: Generate release notes
       shell: bash
