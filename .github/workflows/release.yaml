@@ -49,8 +49,9 @@ jobs:
     #     make flatpak-bundle
     #     mv nyxt.flatpak nyxt-$(cat version).flatpak
 
-    - uses: actions/download-artifact@v3
+    - uses: dawidd6/action-download-artifact@v2
       with:
+        workflow: tests.yml
         #name: ${{ matrix.os }}.${{ matrix.lisp }}.nyxt
         name: ubuntu-latest.sbcl-bin.nyxt
         path: _build
