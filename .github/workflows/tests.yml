@@ -112,7 +112,6 @@ jobs:
     - name: appimage
       shell: bash
       run: |
-        rm -f nyxt
         make appimage LISP=ros LISP_FLAGS="${{ matrix.rosargs }} run -- --no-userinit --non-interactive"
         ls -R _build/AppDir
 
