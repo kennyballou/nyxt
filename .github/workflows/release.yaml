@@ -11,7 +11,7 @@ jobs:
     name: ${{ matrix.lisp }} on ${{ matrix.os }}
     strategy:
       matrix:
-        lisp: [sbcl]
+        lisp: [sbcl-bin]
         #lisp: [ccl-bin/1.12.1]
         # See https://github.com/actions/virtual-environments for the list of
         # official distributions.
@@ -49,23 +49,62 @@ jobs:
     #     make flatpak-bundle
     #     mv nyxt.flatpak nyxt-$(cat version).flatpak
 
-    - uses: dawidd6/action-download-artifact@v2
-      with:
-        workflow: tests.yml
-        #name: ${{ matrix.os }}.${{ matrix.lisp }}.nyxt
-        name: ubuntu-latest.sbcl-bin.nyxt
-        path: _build
+    - name: Install dependencies
+      shell: bash
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y git
+        sudo apt-get install -y libfixposix3 libfixposix-dev libwebkit2gtk-4.0-dev glib-networking gsettings-desktop-schemas xclip enchant-2
+
+    - name: Install Roswell
+      shell: bash
+      # always run install, since it does some global installs and setup that isn't cached
+      env:
+       LISP: ${{ matrix.lisp }}
+      # TODO: Update Roswell to latest version (may need Ubuntu 20.* or above).
+      run: curl -L https://raw.githubusercontent.com/roswell/roswell/v21.10.14.111/scripts/install-for-ci.sh | sh -x
+
+    - name: Check Lisp
+      continue-on-error: true
+      shell: bash
+      run: |
+        ros ${{ matrix.rosargs }} -e '(format t "~&~a:~a on ~a~%" (lisp-implementation-type) (lisp-implementation-version) (machine-type))'
+        ros ${{ matrix.rosargs }} -e '(format t "ASDF: ~a~%" (asdf:asdf-version))'
+        ros ${{ matrix.rosargs }} -e '(format t "fixnum bits: ~a~%" (integer-length most-positive-fixnum))'
+        ros ${{ matrix.rosargs }} -e '(format t "features: ~s~%" *features*)'
+
+    - name: Fetch Common Lisp third-party dependencies
+      shell: bash
+      run: |
+        ros ${{ matrix.rosargs }}  -e '(handler-bind ((error (lambda (a) (uiop:print-backtrace) (format *error-output* "Error: ~a~&" a) (uiop:quit 17)))) (asdf:load-system :nyxt/submodules))'
+        mkdir -p ~/.config/common-lisp/source-registry.conf.d/
+        echo "(:tree \"$PWD/_build/submodules\")" > ~/.config/common-lisp/source-registry.conf.d/asdf.conf
+
+    - name: Load Nyxt
+      shell: bash
+      run: |
+        # TODO: Can we make CCL backtraces more readable?  With trivial-backtrace maybe?
+        ros ${{ matrix.rosargs }} -e '(asdf:load-system :nyxt/submodules)' -e '(handler-bind ((error (lambda (a) (uiop:print-condition-backtrace a) (format *error-output* "Error: ~a~&" a) (uiop:quit 17)))) (asdf:load-system :nyxt/${{matrix.renderer}}-application))'
+
+    - name: Build Nyxt executable
+      shell: bash
+      ## CCL build binary does not work for now, needs more investigation.
+      if: ${{ matrix.lisp != 'ccl-bin/1.12.1' }}
+      run: |
+        rm -f nyxt
+        make all LISP=ros LISP_FLAGS="${{ matrix.rosargs }} run -- --no-userinit --non-interactive"
 
     - name: Display Structure of Downloaded Files
-      run: ls -R _build
+      run: |
+        ls -R _build
+        file nyxt
 
-    # - name: Build AppDir
-    #   shell: bash
-    #   if: ${{ matrix.lisp != 'ccl-bin/1.12.1' }}
-    #   run: |
-    #     sbcl --version
-    #     #make appimage
-    #     #tree _build/AppDir
+    - name: Build AppDir
+      shell: bash
+      if: ${{ matrix.lisp != 'ccl-bin/1.12.1' }}
+      run: |
+        make appimage
+        #tree _build/AppDir
 
     - name: Generate release notes
       shell: bash
